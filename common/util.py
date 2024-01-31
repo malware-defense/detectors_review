@@ -18,19 +18,19 @@ from sklearn.preprocessing import scale
 import keras.backend as K
 from keras.datasets import mnist, cifar10
 from keras.utils import np_utils, to_categorical
-from keras.utils.layer_utils import convert_all_kernels_in_model, convert_dense_weights_data_format
-from keras.utils.data_utils import get_file
-from keras.models import Sequential, Model, load_model
-from keras.layers import Conv2D, MaxPooling2D, BatchNormalization, Concatenate, concatenate, Dense, Dropout, Activation, Flatten, Input, InputLayer, Lambda, Reshape, Conv2DTranspose, UpSampling2D, AveragePooling2D, GlobalAveragePooling2D, ZeroPadding2D, Add, GaussianNoise
-from keras.regularizers import l2
-from keras.engine.topology import Layer, get_source_inputs
-from keras.initializers import RandomUniform, Initializer, Constant, glorot_uniform, Ones, Zeros
-from keras.callbacks import LearningRateScheduler, ModelCheckpoint, ReduceLROnPlateau, CSVLogger
-from keras import optimizers
-from keras.losses import categorical_crossentropy
-from keras.preprocessing.image import ImageDataGenerator
-from keras_applications.imagenet_utils import _obtain_input_shape
-from keras.applications.imagenet_utils import decode_predictions
+# from keras.utils.layer_utils import convert_all_kernels_in_model, convert_dense_weights_data_format
+# from keras.utils.data_utils import get_file
+# from keras.models import Sequential, Model, load_model
+# from keras.layers import Conv2D, MaxPooling2D, BatchNormalization, Concatenate, concatenate, Dense, Dropout, Activation, Flatten, Input, InputLayer, Lambda, Reshape, Conv2DTranspose, UpSampling2D, AveragePooling2D, GlobalAveragePooling2D, ZeroPadding2D, Add, GaussianNoise
+# from keras.regularizers import l2
+# from keras.engine.topology import Layer, get_source_inputs
+# from keras.initializers import RandomUniform, Initializer, Constant, glorot_uniform, Ones, Zeros
+# from keras.callbacks import LearningRateScheduler, ModelCheckpoint, ReduceLROnPlateau, CSVLogger
+# from keras import optimizers
+# from keras.losses import categorical_crossentropy
+# from keras.preprocessing.image import ImageDataGenerator
+# from keras_applications.imagenet_utils import _obtain_input_shape
+# from keras.applications.imagenet_utils import decode_predictions
 import time
 import pickle
 

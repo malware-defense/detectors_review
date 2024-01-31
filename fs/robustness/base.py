@@ -7,8 +7,8 @@ import hashlib
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from datasets import calculate_accuracy
-from datasets.visualization import show_imgs_in_rows
+from ..datasets.datasets_utils import calculate_accuracy
+from ..datasets.visualization import show_imgs_in_rows
 
 
 class RobustClassifierBase:
@@ -26,8 +26,8 @@ def get_robust_classifier_by_name(model, rc_name):
         rc = RobustClassifierBase(model, rc_name)
     elif rc_name.startswith("FeatureSqueezing"):
         rc = FeatureSqueezingRC(model, rc_name)
-    elif rc_name.startswith("MagNet"):
-        rc = MagNetRC(model, rc_name)
+    # elif rc_name.startswith("MagNet"):
+    #     rc = MagNetRC(model, rc_name)
     else:
         raise Exception("Unknown robust classifier [%s]" % rc)
     return rc

@@ -18,7 +18,7 @@ from .feature_squeezing import FeatureSqueezingDetector
 from tensorflow.python.platform import flags
 FLAGS = flags.FLAGS
 
-from utils.output import write_to_csv
+from ..utils.output import write_to_csv
 
 def get_tpr_fpr(true_labels, pred_labels):
     TP = np.sum(np.logical_and(pred_labels == 1, true_labels == 1))
@@ -227,11 +227,11 @@ class DetectionEvaluator:
 
         if detector_name.startswith('FeatureSqueezing'):
             detector = FeatureSqueezingDetector(model, detector_name)
-        elif detector_name.startswith('MagNet'):
-            if self.dataset_name == 'MNIST':
-                detector = MagNetDetectorMNIST(model, detector_name)
-            elif self.dataset_name == "CIFAR-10":
-                detector = MagNetDetectorCIFAR(model, detector_name)
+        # elif detector_name.startswith('MagNet'):
+            # if self.dataset_name == 'MNIST':
+            #     detector = MagNetDetectorMNIST(model, detector_name)
+            # elif self.dataset_name == "CIFAR-10":
+            #     detector = MagNetDetectorCIFAR(model, detector_name)
 
         return detector
 

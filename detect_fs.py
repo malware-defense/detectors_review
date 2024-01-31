@@ -9,9 +9,10 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score
 from fs.datasets.datasets_utils import * 
 from fs.utils.squeeze import *
 from fs.utils.output import write_to_csv
-from fs.robustness import evaluate_robustness
+# from fs.robustness import evaluate_robustness
 from fs.detections.base import DetectionEvaluator, evalulate_detection_test, get_tpr_fpr
-
+from keras import optimizers
+from keras.metrics import categorical_crossentropy
 # from tensorflow.python.platform import flags
 # FLAGS = flags.FLAGS
 # flags.DEFINE_boolean('detection_train_test_mode', True, 'Split into train/test datasets.')
@@ -49,7 +50,7 @@ def train_fs(model, dataset, X1, train_fpr):
     print ("Threshold value: %f" % threshold)
     return threshold
 
-def test(model, dataset, X, threshold):
+def model_test(model, dataset, X, threshold):
     distances = get_distance(model, dataset, X)
     Y_pred = distances > threshold
     return Y_pred, distances
@@ -171,7 +172,7 @@ def main(args):
 
         #for Y_all
         # if attack == ATTACKS[0]:
-        Y_all_pred, Y_all_pred_score = test(model, args.dataset, X_all, threshold)
+        Y_all_pred, Y_all_pred_score = model_test(model, args.dataset, X_all, threshold)
         acc_all, tpr_all, fpr_all, tp_all, ap_all, fb_all, an_all = evalulate_detection_test(Y_all, Y_all_pred)
         fprs_all, tprs_all, thresholds_all = roc_curve(Y_all, Y_all_pred_score)
         roc_auc_all = auc(fprs_all, tprs_all)
@@ -191,7 +192,7 @@ def main(args):
                     'tprs': np.nan, 'fprs': np.nan,	'auc': np.nan}
             results_all.append(curr_result)
         else:
-            Y_success_pred, Y_success_pred_score = test(model, args.dataset, X_success, threshold)
+            Y_success_pred, Y_success_pred_score = model_test(model, args.dataset, X_success, threshold)
             accuracy_success, tpr_success, fpr_success, tp_success, ap_success, fb_success, an_success = evalulate_detection_test(Y_success, Y_success_pred)
             fprs_success, tprs_success, thresholds_success = roc_curve(Y_success, Y_success_pred_score)
             roc_auc_success = auc(fprs_success, tprs_success)
@@ -209,7 +210,7 @@ def main(args):
                     'tprs': np.nan, 'fprs': np.nan,	'auc': np.nan}
             results_all.append(curr_result)
         else:
-            Y_fail_pred, Y_fail_pred_score = test(model, args.dataset, X_fail, threshold)
+            Y_fail_pred, Y_fail_pred_score = model_test(model, args.dataset, X_fail, threshold)
             accuracy_fail, tpr_fail, fpr_fail, tp_fail, ap_fail, fb_fail, an_fail = evalulate_detection_test(Y_fail, Y_fail_pred)
             fprs_fail, tprs_fail, thresholds_fail = roc_curve(Y_fail, Y_fail_pred_score)
             roc_auc_fail = auc(fprs_fail, tprs_fail)
@@ -283,7 +284,7 @@ def main(args):
 
             #for Y_all
             # if attack == ATTACKS[0]:
-            Y_all_pred, Y_all_pred_score = test(model, args.dataset, X_all, threshold)
+            Y_all_pred, Y_all_pred_score = model_test(model, args.dataset, X_all, threshold)
             acc_all, tpr_all, fpr_all, tp_all, ap_all, fb_all, an_all = evalulate_detection_test(Y_all, Y_all_pred)
             fprs_all, tprs_all, thresholds_all = roc_curve(Y_all, Y_all_pred_score)
             roc_auc_all = auc(fprs_all, tprs_all)
@@ -303,7 +304,7 @@ def main(args):
                         'tprs': np.nan, 'fprs': np.nan,	'auc': np.nan}
                 results_all.append(curr_result)
             else:
-                Y_success_pred, Y_success_pred_score = test(model, args.dataset, X_success, threshold)
+                Y_success_pred, Y_success_pred_score = model_test(model, args.dataset, X_success, threshold)
                 accuracy_success, tpr_success, fpr_success, tp_success, ap_success, fb_success, an_success = evalulate_detection_test(Y_success, Y_success_pred)
                 fprs_success, tprs_success, thresholds_success = roc_curve(Y_success, Y_success_pred_score)
                 roc_auc_success = auc(fprs_success, tprs_success)
@@ -321,7 +322,7 @@ def main(args):
                         'tprs': np.nan, 'fprs': np.nan,	'auc': np.nan}
                 results_all.append(curr_result)
             else:
-                Y_fail_pred, Y_fail_pred_score = test(model, args.dataset, X_fail, threshold)
+                Y_fail_pred, Y_fail_pred_score = model_test(model, args.dataset, X_fail, threshold)
                 accuracy_fail, tpr_fail, fpr_fail, tp_fail, ap_fail, fb_fail, an_fail = evalulate_detection_test(Y_fail, Y_fail_pred)
                 fprs_fail, tprs_fail, thresholds_fail = roc_curve(Y_fail, Y_fail_pred_score)
                 roc_auc_fail = auc(fprs_fail, tprs_fail)
