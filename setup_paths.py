@@ -1,11 +1,14 @@
 
 
 
-#-------------------------- Common
-checkpoints_dir = '/home/aaldahdo/detectors/checkpoints/'
-adv_data_dir = '/home/aaldahdo/detectors/adv_data/'
-adv_data_gray_dir = '/home/aaldahdo/detectors/adv_data/gray/'
-DATASETS = ['mnist', 'cifar', 'svhn', 'tiny']
+#-------------------------- Commond
+import os.path
+
+base_dir = '/Users/zyy21/Desktop/研究项目/项目仓/detectors_review/'
+checkpoints_dir = os.path.join(base_dir, 'checkpoints/')
+adv_data_dir = os.path.join(base_dir, 'adv_data/')
+adv_data_gray_dir = os.path.join(base_dir, 'adv_data/gray/')
+DATASETS = ['mnist', 'drebin', 'svhn', 'tiny']
 ATTACK = [['fgsm_0.125', 'fgsm_0.25', 'fgsm_0.3125', \
             'bim_0.125', 'bim_0.25', 'bim_0.3125', \
             'pgd1_10', 'pgd1_15', 'pgd1_20', \
@@ -121,12 +124,12 @@ lid_results_dir = '/home/aaldahdo/detectors/results/lid/'
 lid_results_gray_dir = '/home/aaldahdo/detectors/results/lid/gray/'
 
 #-------------------------- detect MagNet
-magnet_results_dir = '/home/aaldahdo/detectors/results/magnet/'
-magnet_results_gray_dir = '/home/aaldahdo/detectors/results/magnet/gray/'
+magnet_results_dir = os.path.join(base_dir, 'results/magnet/')
+magnet_results_gray_dir = os.path.join(base_dir, 'results/magnet/gray/')
 
 #-------------------------- detect FS
-fs_results_dir = '/home/aaldahdo/detectors/results/fs/'
-fs_results_gray_dir = '/home/aaldahdo/detectors/results/fs/gray/'
+fs_results_dir = os.path.join(base_dir, 'results/fs/')
+fs_results_gray_dir = os.path.join(base_dir, 'results/fs/gray/')
 
 #-------------------------- detect DNR
 layer_names = [[['l_16'], ['l_14'], ['l_10']],\

@@ -11,14 +11,14 @@ import os
 from functools import reduce
 
 from sklearn.metrics import roc_curve, auc
-from .feature_squeezing import FeatureSqueezingDetector
+# from .feature_squeezing import FeatureSqueezingDetector
 # from .magnet_mnist import MagNetDetector as MagNetDetectorMNIST
 # from .magnet_cifar import MagNetDetector as MagNetDetectorCIFAR
 
 from tensorflow.python.platform import flags
 FLAGS = flags.FLAGS
 
-from utils.output import write_to_csv
+# from utils.output import write_to_csv
 
 def get_tpr_fpr(true_labels, pred_labels):
     TP = np.sum(np.logical_and(pred_labels == 1, true_labels == 1))
@@ -221,19 +221,19 @@ class DetectionEvaluator:
     def get_all_non_fae_data(self, attack_name=None):
         return self.get_adversarial_data(only_testing=False, success=True, attack_name=attack_name, include_legitimate=True)
 
-    def get_detector_by_name(self, detector_name):
-        model = self.model
-        detector = None
-
-        if detector_name.startswith('FeatureSqueezing'):
-            detector = FeatureSqueezingDetector(model, detector_name)
-        elif detector_name.startswith('MagNet'):
-            if self.dataset_name == 'MNIST':
-                detector = MagNetDetectorMNIST(model, detector_name)
-            elif self.dataset_name == "CIFAR-10":
-                detector = MagNetDetectorCIFAR(model, detector_name)
-
-        return detector
+    # def get_detector_by_name(self, detector_name):
+    #     model = self.model
+    #     detector = None
+    #
+    #     if detector_name.startswith('FeatureSqueezing'):
+    #         detector = FeatureSqueezingDetector(model, detector_name)
+    #     elif detector_name.startswith('MagNet'):
+    #         if self.dataset_name == 'MNIST':
+    #             detector = MagNetDetectorMNIST(model, detector_name)
+    #         elif self.dataset_name == "CIFAR-10":
+    #             detector = MagNetDetectorCIFAR(model, detector_name)
+    #
+    #     return detector
 
     def evaluate_detections(self, params_str):
         X_train, Y_train, X_test, Y_test = self.get_training_testing_data()
@@ -252,7 +252,7 @@ class DetectionEvaluator:
                 print ("Skipped an unknown detector [%s]" % detector_name.split('?')[0])
                 continue
             detector.train(X_train, Y_train)
-            Y_test_pred, Y_test_pred_score = detector.test(X_test)
+            Y_test_pred, Y_test_pred_score = detector.model_test(X_test)
 
             accuracy, tpr, fpr, tp, ap = evalulate_detection_test(Y_test, Y_test_pred)
             fprs, tprs, thresholds = roc_curve(Y_test, Y_test_pred_score)
@@ -278,7 +278,7 @@ class DetectionEvaluator:
                 else:
                     X_sae, Y_sae = self.get_sae_data(attack_name)
                 if X_sae is not None:
-                    Y_test_pred, Y_test_pred_score = detector.test(X_sae)
+                    Y_test_pred, Y_test_pred_score = detector.model_test(X_sae)
                     _, tpr, _, tp, ap = evalulate_detection_test(Y_sae, Y_test_pred)
                     print ("Detection rate on SAEs: %.4f \t %3d/%3d \t %s" % (tpr, tp, ap, attack_name))
                     overall_detection_rate_saes += tpr * len(Y_sae)
@@ -297,7 +297,7 @@ class DetectionEvaluator:
                 X_nfae_all, Y_nfae_all = self.get_all_non_fae_testing_data()
             else:
                 X_nfae_all, Y_nfae_all = self.get_all_non_fae_data()
-            Y_pred, Y_pred_score = detector.test(X_nfae_all)
+            Y_pred, Y_pred_score = detector.model_test(X_nfae_all)
             _, tpr, _, tp, ap = evalulate_detection_test(Y_nfae_all, Y_pred)
             fprs, tprs, thresholds = roc_curve(Y_nfae_all, Y_pred_score)
 
@@ -315,8 +315,8 @@ class DetectionEvaluator:
                 X_fae, Y_fae = self.get_fae_data()
             
             if X_fae is not None:
-                Y_test_pred, Y_test_pred_score = detector.test(X_fae)
+                Y_test_pred, Y_test_pred_score = detector.model_test(X_fae)
                 _, tpr, _, tp, ap = evalulate_detection_test(Y_fae, Y_test_pred)
                 print ("Overall detection rate on FAEs: %.4f \t %3d/%3d" % (tpr, tp, ap))
 
-        write_to_csv(to_csv, csv_fpath, fieldnames)
+        # write_to_csv(to_csv, csv_fpath, fieldnames)

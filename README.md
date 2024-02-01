@@ -25,9 +25,9 @@ Publicly available codes for the detectors that are use in this work are customi
  8. [NIC](https://github.com/RU-System-Software-and-Security/NIC)
  
 ### Requirement
-1. Tested on Python 3.8
-2. Keras 2.3.1
-3. Tensorflow 2.2
+1. ~~Tested on Python 3.8~~ Python 3.9
+2. ~~Keras 2.3.1~~
+3. ~~Tensorflow 2.2~~ Tensorflow 2.5
 4. thundersvm for GPU-based SVM. [Link](https://thundersvm.readthedocs.io/en/latest/)
 
 ### setup_paths

@@ -18,19 +18,20 @@ from sklearn.preprocessing import scale
 import keras.backend as K
 from keras.datasets import mnist, cifar10
 from keras.utils import np_utils, to_categorical
-from keras.utils.layer_utils import convert_all_kernels_in_model, convert_dense_weights_data_format
-from keras.utils.data_utils import get_file
-from keras.models import Sequential, Model, load_model
-from keras.layers import Conv2D, MaxPooling2D, BatchNormalization, Concatenate, concatenate, Dense, Dropout, Activation, Flatten, Input, InputLayer, Lambda, Reshape, Conv2DTranspose, UpSampling2D, AveragePooling2D, GlobalAveragePooling2D, ZeroPadding2D, Add, GaussianNoise
-from keras.regularizers import l2
-from keras.engine.topology import Layer, get_source_inputs
-from keras.initializers import RandomUniform, Initializer, Constant, glorot_uniform, Ones, Zeros
-from keras.callbacks import LearningRateScheduler, ModelCheckpoint, ReduceLROnPlateau, CSVLogger
-from keras import optimizers
-from keras.losses import categorical_crossentropy
-from keras.preprocessing.image import ImageDataGenerator
-from keras_applications.imagenet_utils import _obtain_input_shape
-from keras.applications.imagenet_utils import decode_predictions
+from setup_paths import *
+# from keras.utils.layer_utils import convert_all_kernels_in_model, convert_dense_weights_data_format
+# from keras.utils.data_utils import get_file
+# from keras.models import Sequential, Model, load_model
+# from keras.layers import Conv2D, MaxPooling2D, BatchNormalization, Concatenate, concatenate, Dense, Dropout, Activation, Flatten, Input, InputLayer, Lambda, Reshape, Conv2DTranspose, UpSampling2D, AveragePooling2D, GlobalAveragePooling2D, ZeroPadding2D, Add, GaussianNoise
+# from keras.regularizers import l2
+# from keras.engine.topology import Layer, get_source_inputs
+# from keras.initializers import RandomUniform, Initializer, Constant, glorot_uniform, Ones, Zeros
+# from keras.callbacks import LearningRateScheduler, ModelCheckpoint, ReduceLROnPlateau, CSVLogger
+# from keras import optimizers
+# from keras.losses import categorical_crossentropy
+# from keras.preprocessing.image import ImageDataGenerator
+# from keras_applications.imagenet_utils import _obtain_input_shape
+# from keras.applications.imagenet_utils import decode_predictions
 import time
 import pickle
 
@@ -64,6 +65,24 @@ def load_mnist_data():
     x_test = np.reshape(x_test, (10000, 28, 28, 1))
 
     return (x_train, y_train), (x_test, y_test)
+
+
+def load_drebin_data():
+    x_train = np.load(os.path.join(base_dir, 'datasets/drebin/train/mama_family_new0307_train_data.npy'))
+    y_train = np.load(os.path.join(base_dir, 'datasets/drebin/train/mama_family_new0307_train_label.npy'))
+    x_test = np.load(os.path.join(base_dir, 'datasets/drebin/train/mama_family_new0307_test_data.npy'))
+    y_test = np.load(os.path.join(base_dir, 'datasets/drebin/train/mama_family_new0307_test_label.npy'))
+
+    x_train = np.reshape(x_train, (-1, 11, 11, 1))
+    x_test = np.reshape(x_test, (-1, 11, 11, 1))
+
+    # x_test_malware = np.load("../mamaDataset/mama_family_new0307_train_data.npy")
+    # x_test_begin = np.load("../mamaDataset/mama_family_new0307_train_data.npy")
+    # x_test = np.concatenate(x_test_malware, x_test_begin)
+    # y_test = np.concatenate([np.ones(len(x_test_malware), dtype=float), np.zeros(len(x_test_begin), dtype=float)])
+
+    return (x_train, y_train), (x_test, y_test)
+
 
 def load_svhn_data():
     if not os.path.isfile("/media/aaldahdo/SAMSUNG/DL_Datasets/SVHN/cropped/train_32x32.mat"):

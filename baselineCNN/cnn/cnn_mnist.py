@@ -1,6 +1,13 @@
 from __future__ import division, absolute_import, print_function
 from common.util import *
 from setup_paths import *
+from keras.layers import *
+
+from keras.callbacks import *
+from keras import optimizers, Model
+from keras.metrics import categorical_crossentropy
+from keras.preprocessing.image import ImageDataGenerator
+from keras import regularizers
 
 class MNISTCNN:
     def __init__(self, mode='train', filename="cnn_mnist.h5", normalize_mean=False, epochs=50, batch_size=128):
@@ -43,27 +50,27 @@ class MNISTCNN:
         input = Input(shape=self.input_shape, name='l_0')
 
         #================= CONV ============================
-        task0 = Conv2D(32, (3, 3), padding='same', kernel_regularizer=l2(weight_decay), name='l_1')(input)
+        task0 = Conv2D(32, (3, 3), padding='same', kernel_regularizer=regularizers.l2(weight_decay), name='l_1')(input)
         task0 = Activation('relu', name='l_2')(task0)
 
-        task0 = Conv2D(32, (3, 3), padding='same', kernel_regularizer=l2(weight_decay), name='l_3')(task0)
+        task0 = Conv2D(32, (3, 3), padding='same', kernel_regularizer=regularizers.l2(weight_decay), name='l_3')(task0)
         task0 = Activation('relu', name='l_4')(task0)
         task0 = MaxPooling2D(pool_size=(2, 2), name='l_5')(task0)
 
-        task0 = Conv2D(64, (3, 3), padding='same', kernel_regularizer=l2(weight_decay), name='l_6')(task0)
+        task0 = Conv2D(64, (3, 3), padding='same', kernel_regularizer=regularizers.l2(weight_decay), name='l_6')(task0)
         task0 = Activation('relu', name='l_7')(task0)
 
-        task0 = Conv2D(64, (3, 3), padding='same', kernel_regularizer=l2(weight_decay), name='l_8')(task0)
+        task0 = Conv2D(64, (3, 3), padding='same', kernel_regularizer=regularizers.l2(weight_decay), name='l_8')(task0)
         task0 = Activation('relu', name='l_9')(task0)
         task0 = MaxPooling2D(pool_size=(2, 2), name='l_10')(task0) #l_3 = task0
 
         #================= Dense ============================
         task0 = Flatten(name='l_11')(task0)
-        task0 = Dense(256, kernel_regularizer=l2(weight_decay), name='l_12')(task0)
+        task0 = Dense(256, kernel_regularizer=regularizers.l2(weight_decay), name='l_12')(task0)
         task0 = Activation('relu', name='l_13')(task0)
-        task0 = Dropout(basic_dropout_rate + 0.2, name='l_14')(task0) 
-        task0 = Dense(256, kernel_regularizer=l2(weight_decay), name='l_15')(task0)
-        task0 = Activation('relu', name='l_16')(task0) 
+        task0 = Dropout(basic_dropout_rate + 0.2, name='l_14')(task0)
+        task0 = Dense(256, kernel_regularizer=regularizers.l2(weight_decay), name='l_15')(task0)
+        task0 = Activation('relu', name='l_16')(task0)
         # task0 = Dropout(basic_dropout_rate + 0.2, name='l_17')(task0) 
 
         #================= Output - classification head ============================

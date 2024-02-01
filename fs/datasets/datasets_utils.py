@@ -2,7 +2,7 @@ import numpy as np
 from functools import reduce
 import pdb
 
-from .visualization import show_imgs_in_rows
+# from .visualization import show_imgs_in_rows
 
 
 def get_next_class(Y_test):

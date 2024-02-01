@@ -52,7 +52,7 @@ if __name__ == "__main__":
         required=False, type=int
     )
 
-    parser.set_defaults(epochs=50)
+    parser.set_defaults(epochs=5)
     parser.set_defaults(batch_size=128)
     args = parser.parse_args()
     main(args)
