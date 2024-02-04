@@ -8,11 +8,11 @@
 import os
 import numpy as np
 from keras.layers.core import Lambda
-from keras.layers.merge import Average, add
+from tensorflow.keras.layers import Average, add
 from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, AveragePooling2D
 from keras.models import Model
 import keras.regularizers as regs
-
+import tensorflow as tf
 
 class DenoisingAutoEncoder:
     def __init__(self, image_shape,
@@ -56,7 +56,8 @@ class DenoisingAutoEncoder:
                 x = Conv2D(layer, (3, 3), activation=activation, padding="same",
                            activity_regularizer=regs.l2(reg_strength))(x)
             elif layer == "max" or layer == "average":
-                x = UpSampling2D((2, 2))(x)
+                # x = UpSampling2D((2, 2))(x)
+                x = tf.image.resize(x, [self.image_shape[0], self.image_shape[1]])
 
         decoded = Conv2D(c, (3, 3), activation='sigmoid', padding='same',
                          activity_regularizer=regs.l2(reg_strength))(x)
