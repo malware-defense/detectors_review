@@ -27,6 +27,11 @@ def get_distance(model, dataset, X1):
         vals_squeezed.append(model.predict(X1_seqeezed_bit))
         X1_seqeezed_filter_median = median_filter_py(X1, 2)
         vals_squeezed.append(model.predict(X1_seqeezed_filter_median))
+    elif dataset == 'drebin':
+        X1_seqeezed_filter_median = median_filter_py(X1, 2)
+        vals_squeezed.append(model.predict(X1_seqeezed_filter_median))
+        # X1_seqeezed_filter_local = non_local_means_color_py(X1, 6, 3, 2)
+        # vals_squeezed.append(model.predict(X1_seqeezed_filter_local))
     else:
         X1_seqeezed_bit = bit_depth_py(X1, 5)
         vals_squeezed.append(model.predict(X1_seqeezed_bit))
@@ -61,7 +66,7 @@ def main(args):
         "Dataset parameter must be either 'mnist', 'cifar', 'svhn', or 'tiny'"
     ATTACKS = ATTACK[DATASETS.index(args.dataset)]
 
-    assert os.path.isfile('{}cnn_{}.h5'.format(checkpoints_dir, args.dataset)), \
+    assert os.path.isfile('{}nn_{}.h5'.format(checkpoints_dir, args.dataset)), \
         'model file not found... must first train model using train_model.py.'
 
     print('Loading the data and model...')
@@ -72,7 +77,14 @@ def main(args):
         model=model_class.model
         sgd = optimizers.SGD(lr=0.05, decay=1e-6, momentum=0.9, nesterov=True)
         model.compile(loss=categorical_crossentropy, optimizer=sgd, metrics=['accuracy'])
-    
+
+    if args.dataset == 'drebin':
+        from baselineCNN.nn.nn_drebin import DREBINNN as myModel
+        model_class = myModel(mode='load', filename='nn_{}.h5'.format(args.dataset))
+        model=model_class.model
+        sgd = optimizers.SGD(lr=0.05, decay=1e-6, momentum=0.9, nesterov=True)
+        model.compile(loss=categorical_crossentropy, optimizer=sgd, metrics=['accuracy'])
+
     elif args.dataset == 'cifar':
         from baselineCNN.cnn.cnn_cifar10 import CIFAR10CNN as myModel
         model_class = myModel(mode='load', filename='cnn_{}.h5'.format(args.dataset))

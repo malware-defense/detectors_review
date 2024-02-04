@@ -1,13 +1,17 @@
 from __future__ import division, absolute_import, print_function
 import argparse
+import os.path
 
 from tensorflow.python.keras.backend_config import epsilon
 from common.util import *
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID" 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, CarliniL2Method, CarliniLInfMethod, ProjectedGradientDescent, DeepFool, ThresholdAttack, PixelAttack, SpatialTransformation, SquareAttack, ZooAttack, BoundaryAttack, HopSkipJump
-from art.classifiers import KerasClassifier
-
+from art.estimators.classification import KerasClassifier
+from keras import optimizers
+from keras.metrics import categorical_crossentropy
+from setup_paths import *
+import tensorflow as tf
 import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
@@ -19,10 +23,11 @@ from matplotlib import pyplot as plt
 #       yield ndx, iterable_1[ndx:min(ndx + batch_size, l)], iterable_2[ndx:min(ndx + batch_size, l)]
 
 def main(args):
-    assert args.dataset in ['mnist', 'cifar', 'svhn', 'tiny', 'tiny_gray'], \
+    assert args.dataset in ['mnist', 'drebin', 'svhn', 'tiny', 'tiny_gray'], \
         "dataset parameter must be either 'mnist', 'cifar', 'svhn', or 'tiny'"
     print('Dataset: %s' % args.dataset)
-    adv_path = '/home/aaldahdo/detectors/adv_data/'
+    adv_path = os.path.join(base_dir, 'adv_data/')
+    tf.compat.v1.disable_eager_execution()
 
     if args.dataset == 'mnist':
         from baselineCNN.cnn.cnn_mnist import MNISTCNN as model
@@ -44,7 +49,28 @@ def main(args):
         y_test_labels = model_mnist.y_test_labels
         translation = 10
         rotation = 60
-    
+
+    elif args.dataset == 'drebin':
+        from baselineCNN.nn.nn_drebin import DREBINNN as model
+        model_mnist = model(mode='load', filename='nn_{}.h5'.format(args.dataset))
+        classifier=model_mnist.model
+        sgd = optimizers.SGD(lr=0.05, decay=1e-6, momentum=0.9, nesterov=True)
+        classifier.compile(loss=categorical_crossentropy, optimizer=sgd, metrics=['accuracy'])
+        kclassifier = KerasClassifier(model=classifier, clip_values=(0, 1))
+        epsilons=[8/256, 16/256, 32/256, 64/256, 80/256, 128/256]
+        epsilons1=[5, 10, 15, 20, 25, 30, 40]
+        epsilons2=[0.125, 0.25, 0.3125, 0.5, 1, 1.5, 2]
+        eps_sa=0.3
+        pa_th=78
+        # random_restart = 20
+        # x_train = model_mnist.x_train
+        x_test = model_mnist.x_test
+        # y_train = model_mnist.y_train
+        y_test = model_mnist.y_test
+        y_test_labels = model_mnist.y_test_labels
+        translation = 10
+        rotation = 60
+
     elif args.dataset == 'mnist_gray':
         from baselineCNN.cnn.cnn_mnist_gray import MNISTCNN as model
         model_mnist = model(mode='load', filename='cnn_{}.h5'.format(args.dataset))

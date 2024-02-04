@@ -7,7 +7,8 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ""
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 from magnet.defensive_models import DenoisingAutoEncoder as DAE
 from magnet.worker import *
-from magnet.worker import *
+from keras import optimizers, Model
+from keras.metrics import categorical_crossentropy
 
 def test(dic, X, thrs):
     dist_all = []
@@ -34,7 +35,7 @@ def main(args):
         "Dataset parameter must be either 'mnist', 'cifar', 'svhn', or 'tiny'"
     ATTACKS = ATTACK[DATASETS.index(args.dataset)]
 
-    assert os.path.isfile('{}cnn_{}.h5'.format(checkpoints_dir, args.dataset)), \
+    assert os.path.isfile('{}nn_{}.h5'.format(checkpoints_dir, args.dataset)), \
         'model file not found... must first train model using train_model.py.'
 
     print('Loading the data and model...')
@@ -45,7 +46,7 @@ def main(args):
         model=model_class.model
         sgd = optimizers.SGD(lr=0.05, decay=1e-6, momentum=0.9, nesterov=True)
         model.compile(loss=categorical_crossentropy, optimizer=sgd, metrics=['accuracy'])
-        modelx = Model(inputs=model.get_input_at(0), outputs=model.get_layer('classification_head_before_activation').output)
+        modelx = Model(inputs=model.get_layer('l_0').output, outputs=model.get_layer('classification_head_before_activation').output)
         clip_min, clip_max = 0,1
         v_noise=0.1
         p1=2
@@ -53,10 +54,27 @@ def main(args):
         type='error'
         t=10
         drop_rate={"I": 0.001, "II": 0.001}
-        epochs=100
-        
+        epochs=10
+
+    elif args.dataset == 'drebin':
+        from baselineCNN.nn.nn_drebin import DREBINNN as myModel
+        model_class = myModel(mode='load', filename='nn_{}.h5'.format(args.dataset))
+        model = model_class.model
+        sgd = optimizers.SGD(lr=0.05, decay=1e-6, momentum=0.9, nesterov=True)
+        model.compile(loss=categorical_crossentropy, optimizer=sgd, metrics=['accuracy'])
+        modelx = Model(inputs=model.get_layer('l_0').output,
+                       outputs=model.get_layer('classification_head_before_activation').output)
+        clip_min, clip_max = 0, 1
+        v_noise = 0.1
+        p1 = 2
+        p2 = 1
+        type = 'error'
+        t = 10
+        drop_rate = {"I": 0.001, "II": 0.001}
+        epochs = 10
+
     elif args.dataset == 'cifar':
-        from baselineCNN.cnn.cnn_cifar10 import CIFAR10CNN as myModel
+        from baselineCNN.nn.nn_drebin import DREBINNN as myModel
         model_class = myModel(mode='load', filename='cnn_{}.h5'.format(args.dataset))
         model=model_class.model
         sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
@@ -106,13 +124,13 @@ def main(args):
 
     # Load the dataset
     X_train, Y_train, X_test, Y_test = model_class.x_train, model_class.y_train, model_class.x_test, model_class.y_test
-    val_size = 5000
+    val_size = 1000
     x_val = X_train[:val_size, :, :, :]
     y_val = Y_train[:val_size]
     X_train = X_train[val_size:, :, :, :]
     Y_train = Y_train[val_size:]
 
-    #Train detector -- if already trained, load it
+    #Train detector -- if already trained, load it    key steps
     detector_i_filename = '{}_magnet_detector_i.h5'.format(args.dataset)
     detector_ii_filename = '{}_magnet_detector_ii.h5'.format(args.dataset)
     im_dim = [X_train.shape[1], X_train.shape[2], X_train.shape[3]]
@@ -181,6 +199,7 @@ def main(args):
         else:
             X_test_adv = X_test_adv[inds_correct]
 
+        # filter Attack failed Adv Samples
         pred_adv = model.predict(X_test_adv)
         loss, acc_suc = model.evaluate(X_test_adv, Y_test, verbose=0)
         inds_success = np.where(pred_adv.argmax(axis=1) != Y_test.argmax(axis=1))[0]
