@@ -49,23 +49,13 @@ class DREBINNN:
         #================= Input ============================
         input = Input(shape=self.input_shape, name='l_0')
 
-        #================= CONV ============================
-        task0 = Conv2D(6, (3, 3), padding='same', kernel_regularizer=regularizers.l2(weight_decay), name='l_1')(input)
-        task0 = Activation('relu', name='l_2')(task0)
-        task0 = MaxPooling2D(pool_size=(2, 2), name='l_3')(task0)
-
-        task0 = Conv2D(16, (3, 3), padding='same', kernel_regularizer=regularizers.l2(weight_decay), name='l_4')(task0)
-        task0 = Activation('relu', name='l_5')(task0)
-        task0 = MaxPooling2D(pool_size=(2, 2), name='l_6')(task0) #l_3 = task0
-
         #================= Dense ============================
-        task0 = Flatten(name='l_7')(task0)
-        task0 = Dense(128, kernel_regularizer=regularizers.l2(weight_decay), name='l_8')(task0)
-        task0 = Activation('relu', name='l_9')(task0)
-        task0 = Dropout(basic_dropout_rate + 0.2, name='l_10')(task0)
-        task0 = Dense(32, kernel_regularizer=regularizers.l2(weight_decay), name='l_11')(task0)
-        task0 = Activation('relu', name='l_12')(task0)
-        # task0 = Dropout(basic_dropout_rate + 0.2, name='l_17')(task0) 
+        task0 = Flatten(name='l_1')(input)
+        task0 = Dense(128, kernel_regularizer=regularizers.l2(weight_decay), name='l_2')(task0)
+        task0 = Activation('relu', name='l_3')(task0)
+        task0 = Dense(100, kernel_regularizer=regularizers.l2(weight_decay), name='l_4')(task0)
+        task0 = Activation('relu', name='l_5')(task0)
+        task0 = Dropout(basic_dropout_rate + 0.2, name='l_6')(task0)
 
         #================= Output - classification head ============================
         classification_output = Dense(self.num_classes, name="classification_head_before_activation")(task0)
@@ -78,41 +68,17 @@ class DREBINNN:
     def train(self, model):
         #================= Settings =========================
         learning_rate = 0.001
-        lr_decay = 1e-6
-        lr_drop = 5
-        def lr_scheduler(epoch):
-            return learning_rate * (0.5 ** (epoch // lr_drop))
-        reduce_lr = LearningRateScheduler(lr_scheduler)
+
         weights_file = "{}{}".format(checkpoints_dir, self.filename)
-        model_checkpoint = ModelCheckpoint(weights_file, monitor='val_accuracy', save_best_only=True, verbose=1)
-        callbacks=[reduce_lr, model_checkpoint]
-        
-        #================= Data augmentation =========================
-        datagen = ImageDataGenerator(
-            featurewise_center=False,  # set input mean to 0 over the dataset
-            samplewise_center=False,  # set each sample mean to 0
-            featurewise_std_normalization=False,  # divide inputs by std of the dataset
-            samplewise_std_normalization=False,  # divide each input by its std
-            zca_whitening=False,  # apply ZCA whitening
-            rotation_range=15,  # randomly rotate images in the range (degrees, 0 to 180)
-            width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
-            height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
-            horizontal_flip=True,  # randomly flip images
-            vertical_flip=False)  # randomly flip images
-        
-        #================= Train =========================
-        datagen.fit(self.x_train)
-        sgd = optimizers.SGD(lr=learning_rate, decay=lr_decay, momentum=0.9, nesterov=True)
+        sgd = optimizers.SGD(lr=learning_rate, momentum=0.9, nesterov=True)
         model.compile(loss=categorical_crossentropy, optimizer=sgd, metrics=['accuracy'])
 
-        historytemp = model.fit(datagen.flow(self.x_train, y=self.y_train, batch_size=self.batch_size),
-                                          epochs=self.epochs, callbacks=callbacks,
-                                          validation_data=(self.x_test, self.y_test))
+        historytemp = model.fit(self.x_train, y=self.y_train, batch_size=self.batch_size,epochs=self.epochs)
         
         #================= Save model and history =========================
         with open("{}{}_history.pkl".format(checkpoints_dir, self.filename[:-3]), 'wb') as handle:
             pickle.dump(historytemp.history, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        # model.save_weights(weights_file)
+        model.save_weights(weights_file)
 
         return model

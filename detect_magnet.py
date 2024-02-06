@@ -188,34 +188,19 @@ def main(args):
 
         #Prepare data
         # Load adversarial samples
-        X_test_adv = np.load('{}{}_{}.npy'.format(adv_data_dir, args.dataset, attack))
-        if attack=='df' and args.dataset=='tiny':
-            Y_test=model_class.y_test[0:2700]
-            X_test=model_class.x_test[0:2700]
-            cwi_inds = inds_correct[inds_correct<2700]
-            Y_test = Y_test[cwi_inds]
-            X_test = X_test[cwi_inds]
-            X_test_adv = X_test_adv[cwi_inds]
-        else:
-            X_test_adv = X_test_adv[inds_correct]
+        X_test_adv = np.load('{}{}.npy'.format(adv_data_dir, 'mama_family_testCW_data'))
+        X_test_adv = np.reshape(X_test_adv, (-1, 11, 11, 1))
+        Y_test_adv = np.load('{}{}.npy'.format(adv_data_dir, 'mama_family_testCW_label'))
 
-        # filter Attack failed Adv Samples
-        pred_adv = model.predict(X_test_adv)
-        loss, acc_suc = model.evaluate(X_test_adv, Y_test, verbose=0)
-        inds_success = np.where(pred_adv.argmax(axis=1) != Y_test.argmax(axis=1))[0]
-        inds_fail = np.where(pred_adv.argmax(axis=1) == Y_test.argmax(axis=1))[0]
-        X_test_adv_success = X_test_adv[inds_success]
-        Y_test_success = Y_test[inds_success]
-        X_test_adv_fail = X_test_adv[inds_fail]
-        Y_test_fail = Y_test[inds_fail]
+        # filter adversarial samples according test example
+        adv_inds_correct = inds_correct[np.where(inds_correct < len(Y_test_adv))]
+        X_test_adv = X_test_adv[adv_inds_correct]
+        Y_test_adv = Y_test_adv[adv_inds_correct]
 
         # prepare X and Y for detectors
         X_all = np.concatenate([X_test, X_test_adv])
-        Y_all = np.concatenate([np.zeros(len(X_test), dtype=bool), np.ones(len(X_test), dtype=bool)])
-        X_success = np.concatenate([X_test[inds_success], X_test_adv_success])
-        Y_success = np.concatenate([np.zeros(len(inds_success), dtype=bool), np.ones(len(inds_success), dtype=bool)])
-        X_fail = np.concatenate([X_test[inds_fail], X_test_adv_fail])
-        Y_fail = np.concatenate([np.zeros(len(inds_fail), dtype=bool), np.ones(len(inds_fail), dtype=bool)])
+        Y_all = np.concatenate([np.zeros(len(X_test), dtype=bool), np.ones(len(X_test_adv), dtype=bool)])
+
 
         # --- get thresholds per detector
         testAttack = AttackData(X_test_adv, np.argmax(Y_test, axis=1), attack)
@@ -224,166 +209,38 @@ def main(args):
 
         #For Y_all 
         Y_all_pred, Y_all_pred_score = test(detector_dict, X_all, thrs)
-        acc_all, tpr_all, fpr_all, tp_all, ap_all, fb_all, an_all = evalulate_detection_test(Y_all, Y_all_pred)
         fprs_all, tprs_all, thresholds_all = roc_curve(Y_all, Y_all_pred_score[0])
         roc_auc_all = auc(fprs_all, tprs_all)
-        print("AUC: {:.4f}%, Overall accuracy: {:.4f}%, FPR value: {:.4f}%".format(100*roc_auc_all, 100*acc_all, 100*fpr_all))
+        maxindex = (tprs_all - fprs_all).tolist().index(max(tprs_all - fprs_all))
+        threshold = thresholds_all[maxindex]
 
-        curr_result = {'type':'all', 'nsamples': len(inds_correct),	'acc_suc': acc_suc,	\
-                        'acc': acc_all, 'tpr': tpr_all, 'fpr': fpr_all, 'tp': tp_all, 'ap': ap_all, 'fb': fb_all, 'an': an_all,	\
-                        'tprs': list(fprs_all), 'fprs': list(tprs_all),	'auc': roc_auc_all}
-        results_all.append(curr_result)
 
-        #for Y_success
-        if len(inds_success)==0:
-            tpr_success=np.nan
-            curr_result = {'type':'success', 'nsamples': 0,	'acc_suc': 0,	\
-                    'acc': np.nan, 'tpr': np.nan, 'fpr': np.nan, 'tp': np.nan, 'ap': np.nan, 'fb': np.nan, 'an': np.nan,	\
-                    'tprs': np.nan, 'fprs': np.nan,	'auc': np.nan}
-            results_all.append(curr_result)
-        else:
-            Y_success_pred, Y_success_pred_score = test(detector_dict, X_success, thrs)
-            accuracy_success, tpr_success, fpr_success, tp_success, ap_success, fb_success, an_success = evalulate_detection_test(Y_success, Y_success_pred)
-            fprs_success, tprs_success, thresholds_success = roc_curve(Y_success, Y_success_pred_score[0])
-            roc_auc_success = auc(fprs_success, tprs_success)
+        fprs_all, tprs_all, thresholds_all = roc_curve(Y_all, Y_all_pred_score[1])
+        roc_auc_all1 = auc(fprs_all, tprs_all)
+        maxindex = (tprs_all - fprs_all).tolist().index(max(tprs_all - fprs_all))
+        threshold1 = thresholds_all[maxindex]
 
-            curr_result = {'type':'success', 'nsamples': len(inds_success),	'acc_suc': 0,	\
-                    'acc': accuracy_success, 'tpr': tpr_success, 'fpr': fpr_success, 'tp': tp_success, 'ap': ap_success, 'fb': fb_success, 'an': an_success,	\
-                    'tprs': list(fprs_success), 'fprs': list(tprs_success),	'auc': roc_auc_success}
-            results_all.append(curr_result)
+        accuracy, precision, recall, F1 = detection_evalulate_metric(Y_all, Y_all_pred)
 
-        #for Y_fail
-        if len(inds_fail)==0:
-            tpr_fail=np.nan
-            curr_result = {'type':'fail', 'nsamples': 0,	'acc_suc': 0,	\
-                    'acc': np.nan, 'tpr': np.nan, 'fpr': np.nan, 'tp': np.nan, 'ap': np.nan, 'fb': np.nan, 'an': np.nan,	\
-                    'tprs': np.nan, 'fprs': np.nan,	'auc': np.nan}
-            results_all.append(curr_result)
-        else:
-            Y_fail_pred, Y_fail_pred_score = test(detector_dict, X_fail, thrs)
-            accuracy_fail, tpr_fail, fpr_fail, tp_fail, ap_fail, fb_fail, an_fail = evalulate_detection_test(Y_fail, Y_fail_pred)
-            fprs_fail, tprs_fail, thresholds_fail = roc_curve(Y_fail, Y_fail_pred_score[0])
-            roc_auc_fail = auc(fprs_fail, tprs_fail)
+        # thrs['I'] = threshold
+        # thrs['II'] = threshold1
+        Y_all_pred, Y_all_pred_score = test(detector_dict, X_all, thrs)
+        accuracy, precision, recall, F1 = detection_evalulate_metric(Y_all, Y_all_pred)
 
-            curr_result = {'type':'fail', 'nsamples': len(inds_fail),	'acc_suc': 0,	\
-                    'acc': accuracy_fail, 'tpr': tpr_fail, 'fpr': fpr_fail, 'tp': tp_fail, 'ap': ap_fail, 'fb': fb_fail, 'an': an_fail,	\
-                    'tprs': list(fprs_fail), 'fprs': list(tprs_fail),	'auc': roc_auc_fail}
-            results_all.append(curr_result)
 
-        import csv
-        with open('{}{}_{}.csv'.format(magnet_results_dir, args.dataset, attack), 'w', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            for row in results_all:
-                writer.writerow(row)
-        
-        print('{:>15} attack - accuracy of pretrained model: {:7.2f}% \
-            - detection rates ------ SAEs: {:7.2f}%, FAEs: {:7.2f}%'.format(attack, 100*acc_suc, 100*tpr_success, 100*tpr_fail))
-    
-    print('Done!')
 
-    #Gray box attack 
-    ## Evaluate detector
-    #on adversarial attack
-    for attack in ATTACKS:
-        if not(attack=='hop' or attack=='sa' or attack=='sta' or (attack=='df' and args.dataset=='tiny')):
-            Y_test=Y_test_copy
-            X_test=X_test_copy
-            results_all = []
+        with open(f'{os.path.join("./results/magnet", "results.log")}', 'a+') as f1:
+            f1.write(
+                f'AUC: {roc_auc_all}\n'
+            )
+            f1.write(
+                f'AUC1: {roc_auc_all1}\n'
+            )
+            f1.write(
+                f'Accuracy: {accuracy}\nPrecision: {precision}\nRecall: {recall}\nF1: {F1}\n'
+            )
+            f1.write('\n')
 
-            #Prepare data
-            # Load adversarial samples
-            X_test_adv = np.load('{}{}_{}.npy'.format(adv_data_gray_dir, args.dataset, attack))
-            if attack=='df' and args.dataset=='tiny':
-                Y_test=model_class.y_test[0:2700]
-                X_test=model_class.x_test[0:2700]
-                cwi_inds = inds_correct[inds_correct<2700]
-                Y_test = Y_test[cwi_inds]
-                X_test = X_test[cwi_inds]
-                X_test_adv = X_test_adv[cwi_inds]
-            else:
-                X_test_adv = X_test_adv[inds_correct]
-
-            pred_adv = model.predict(X_test_adv)
-            loss, acc_suc = model.evaluate(X_test_adv, Y_test, verbose=0)
-            inds_success = np.where(pred_adv.argmax(axis=1) != Y_test.argmax(axis=1))[0]
-            inds_fail = np.where(pred_adv.argmax(axis=1) == Y_test.argmax(axis=1))[0]
-            X_test_adv_success = X_test_adv[inds_success]
-            Y_test_success = Y_test[inds_success]
-            X_test_adv_fail = X_test_adv[inds_fail]
-            Y_test_fail = Y_test[inds_fail]
-
-            # prepare X and Y for detectors
-            X_all = np.concatenate([X_test, X_test_adv])
-            Y_all = np.concatenate([np.zeros(len(X_test), dtype=bool), np.ones(len(X_test), dtype=bool)])
-            X_success = np.concatenate([X_test[inds_success], X_test_adv_success])
-            Y_success = np.concatenate([np.zeros(len(inds_success), dtype=bool), np.ones(len(inds_success), dtype=bool)])
-            X_fail = np.concatenate([X_test[inds_fail], X_test_adv_fail])
-            Y_fail = np.concatenate([np.zeros(len(inds_fail), dtype=bool), np.ones(len(inds_fail), dtype=bool)])
-
-            # --- get thresholds per detector
-            testAttack = AttackData(X_test_adv, np.argmax(Y_test, axis=1), attack)
-            evaluator = Evaluator(operator, testAttack)
-            thrs = evaluator.operator.get_thrs(drop_rate)
-
-            #For Y_all 
-            Y_all_pred, Y_all_pred_score = test(detector_dict, X_all, thrs)
-            acc_all, tpr_all, fpr_all, tp_all, ap_all, fb_all, an_all = evalulate_detection_test(Y_all, Y_all_pred)
-            fprs_all, tprs_all, thresholds_all = roc_curve(Y_all, Y_all_pred_score[0])
-            roc_auc_all = auc(fprs_all, tprs_all)
-            print("AUC: {:.4f}%, Overall accuracy: {:.4f}%, FPR value: {:.4f}%".format(100*roc_auc_all, 100*acc_all, 100*fpr_all))
-
-            curr_result = {'type':'all', 'nsamples': len(inds_correct),	'acc_suc': acc_suc,	\
-                            'acc': acc_all, 'tpr': tpr_all, 'fpr': fpr_all, 'tp': tp_all, 'ap': ap_all, 'fb': fb_all, 'an': an_all,	\
-                            'tprs': list(fprs_all), 'fprs': list(tprs_all),	'auc': roc_auc_all}
-            results_all.append(curr_result)
-
-            #for Y_success
-            if len(inds_success)==0:
-                tpr_success=np.nan
-                curr_result = {'type':'success', 'nsamples': 0,	'acc_suc': 0,	\
-                        'acc': np.nan, 'tpr': np.nan, 'fpr': np.nan, 'tp': np.nan, 'ap': np.nan, 'fb': np.nan, 'an': np.nan,	\
-                        'tprs': np.nan, 'fprs': np.nan,	'auc': np.nan}
-                results_all.append(curr_result)
-            else:
-                Y_success_pred, Y_success_pred_score = test(detector_dict, X_success, thrs)
-                accuracy_success, tpr_success, fpr_success, tp_success, ap_success, fb_success, an_success = evalulate_detection_test(Y_success, Y_success_pred)
-                fprs_success, tprs_success, thresholds_success = roc_curve(Y_success, Y_success_pred_score[0])
-                roc_auc_success = auc(fprs_success, tprs_success)
-
-                curr_result = {'type':'success', 'nsamples': len(inds_success),	'acc_suc': 0,	\
-                        'acc': accuracy_success, 'tpr': tpr_success, 'fpr': fpr_success, 'tp': tp_success, 'ap': ap_success, 'fb': fb_success, 'an': an_success,	\
-                        'tprs': list(fprs_success), 'fprs': list(tprs_success),	'auc': roc_auc_success}
-                results_all.append(curr_result)
-
-            #for Y_fail
-            if len(inds_fail)==0:
-                tpr_fail=np.nan
-                curr_result = {'type':'fail', 'nsamples': 0,	'acc_suc': 0,	\
-                        'acc': np.nan, 'tpr': np.nan, 'fpr': np.nan, 'tp': np.nan, 'ap': np.nan, 'fb': np.nan, 'an': np.nan,	\
-                        'tprs': np.nan, 'fprs': np.nan,	'auc': np.nan}
-                results_all.append(curr_result)
-            else:
-                Y_fail_pred, Y_fail_pred_score = test(detector_dict, X_fail, thrs)
-                accuracy_fail, tpr_fail, fpr_fail, tp_fail, ap_fail, fb_fail, an_fail = evalulate_detection_test(Y_fail, Y_fail_pred)
-                fprs_fail, tprs_fail, thresholds_fail = roc_curve(Y_fail, Y_fail_pred_score[0])
-                roc_auc_fail = auc(fprs_fail, tprs_fail)
-
-                curr_result = {'type':'fail', 'nsamples': len(inds_fail),	'acc_suc': 0,	\
-                        'acc': accuracy_fail, 'tpr': tpr_fail, 'fpr': fpr_fail, 'tp': tp_fail, 'ap': ap_fail, 'fb': fb_fail, 'an': an_fail,	\
-                        'tprs': list(fprs_fail), 'fprs': list(tprs_fail),	'auc': roc_auc_fail}
-                results_all.append(curr_result)
-
-            import csv
-            with open('{}{}_gray_{}.csv'.format(magnet_results_gray_dir, args.dataset, attack), 'w', newline='') as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                writer.writeheader()
-                for row in results_all:
-                    writer.writerow(row)
-            
-            print('Gray-box attack {}- accuracy of pretrained model: {:7.2f}% \
-                - detection rates ------ SAEs: {:7.2f}%, FAEs: {:7.2f}%'.format(attack, 100*acc_suc, 100*tpr_success, 100*tpr_fail))
-        
         print('Done!')
 
 if __name__ == "__main__":
