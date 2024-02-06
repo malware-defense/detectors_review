@@ -7,8 +7,11 @@ def main(args):
     print('Data set: %s' % args.dataset)
     
     if args.dataset == 'drebin':
-        from baselineCNN.nn.nn_drebin import DREBINNN as model
-        model_mnist = model(mode='train', filename='nn_{}.h5'.format(args.dataset), epochs=args.epochs, batch_size=args.batch_size)
+        # from baselineCNN.nn.nn_drebin import DREBINNN as model
+        # model(mode='train', filename='nn_{}.h5'.format(args.dataset), epochs=args.epochs, batch_size=args.batch_size)
+
+        from baselineCNN.nn.nn_drebin_th import DrebinNnTorch as model
+        model(mode='train', filename='nn_{}_th.h5'.format(args.dataset), epochs=args.epochs, batch_size=args.batch_size)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

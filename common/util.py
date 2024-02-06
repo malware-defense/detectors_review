@@ -34,6 +34,8 @@ from setup_paths import *
 # from keras.applications.imagenet_utils import decode_predictions
 import time
 import pickle
+from sklearn.metrics import *
+
 
 def normalize_mean(X_train, X_test):
     mean = np.mean(X_train, axis=(0, 1, 2, 3))
@@ -68,18 +70,13 @@ def load_mnist_data():
 
 
 def load_drebin_data():
-    x_train = np.load(os.path.join(base_dir, 'datasets/drebin/train/mama_family_new0307_train_data.npy'))
-    y_train = np.load(os.path.join(base_dir, 'datasets/drebin/train/mama_family_new0307_train_label.npy'))
-    x_test = np.load(os.path.join(base_dir, 'datasets/drebin/train/mama_family_new0307_test_data.npy'))
-    y_test = np.load(os.path.join(base_dir, 'datasets/drebin/train/mama_family_new0307_test_label.npy'))
+    x_train = np.load(os.path.join(base_dir, 'datasets/drebin/train/mama_family_ori_train_data.npy'))
+    y_train = np.load(os.path.join(base_dir, 'datasets/drebin/train/mama_family_ori_train_label.npy'))
+    x_test = np.load(os.path.join(base_dir, 'datasets/drebin/test/mama_family_testori_data.npy'))
+    y_test = np.load(os.path.join(base_dir, 'datasets/drebin/test/mama_family_testori_label.npy'))
 
     x_train = np.reshape(x_train, (-1, 11, 11, 1))
     x_test = np.reshape(x_test, (-1, 11, 11, 1))
-
-    # x_test_malware = np.load("../mamaDataset/mama_family_new0307_train_data.npy")
-    # x_test_begin = np.load("../mamaDataset/mama_family_new0307_train_data.npy")
-    # x_test = np.concatenate(x_test_malware, x_test_begin)
-    # y_test = np.concatenate([np.ones(len(x_test_malware), dtype=float), np.zeros(len(x_test_begin), dtype=float)])
 
     return (x_train, y_train), (x_test, y_test)
 
@@ -134,7 +131,7 @@ def load_tiny_imagenet_data():
     data_bytes = open_file.read()
     y_test = np.frombuffer(data_bytes, dtype=np.uint8)
     y_test = y_test.reshape(10000)
-    
+
     x_train = x_train.astype('float32')
     x_test = x_test.astype('float32')
 
@@ -163,6 +160,13 @@ def evalulate_detection_test(Y_detect_test, Y_detect_pred):
     accuracy = accuracy_score(Y_detect_test, Y_detect_pred, normalize=True, sample_weight=None)
     tpr, fpr, tp, ap, fp, an = get_tpr_fpr(Y_detect_test, Y_detect_pred)
     return accuracy, tpr, fpr, tp, ap, fp, an
+
+def detection_evalulate_metric(Y_detect_test, Y_detect_pred):
+    accuracy = accuracy_score(Y_detect_test, Y_detect_pred)
+    precision = precision_score(Y_detect_test, Y_detect_pred)
+    recall = recall_score(Y_detect_test, Y_detect_pred)
+    F1 = float(2 * precision * recall / (precision + recall))
+    return accuracy, precision, recall, F1
 
 def merge_and_generate_labels(X_pos, X_neg):
     """
