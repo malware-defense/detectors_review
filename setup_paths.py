@@ -4,7 +4,8 @@
 #-------------------------- Commond
 import os.path
 
-base_dir = '/Users/zyy21/Desktop/研究项目/项目仓/detectors_review/'
+base_dir = '/tmp/pycharm_project_843/'   # remote
+# base_dir = '/Users/zyy21/Desktop/研究项目/项目仓/detectors_review/'
 checkpoints_dir = os.path.join(base_dir, 'checkpoints/')
 adv_data_dir = os.path.join(base_dir, 'adv_data/')
 adv_data_gray_dir = os.path.join(base_dir, 'adv_data/gray/')

@@ -11,6 +11,8 @@ from art.classifiers import KerasClassifier
 import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
+from keras import optimizers
+from keras.metrics import categorical_crossentropy
 
 # def batch(iterable_1, iterable_2, batch_size=10):
 #   l = len(iterable_1)
