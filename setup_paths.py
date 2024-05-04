@@ -3,8 +3,8 @@
 
 #-------------------------- Commond
 import os.path
-
-base_dir = '/Users/zyy21/Desktop/研究项目/项目仓/detectors_review/'
+base_dir = '/tmp/pycharm_project_843/'
+# base_dir = '/Users/zyy21/Desktop/研究项目/项目仓/detectors_review/'
 checkpoints_dir = os.path.join(base_dir, 'checkpoints/')
 adv_data_dir = os.path.join(base_dir, 'adv_data/')
 adv_data_gray_dir = os.path.join(base_dir, 'adv_data/gray/')
@@ -108,9 +108,9 @@ BANDWIDTHS = {'mnist': 1.20, 'cifar': 0.26, 'svhn': 1.00, 'tiny': 0.26}
 kd_bu_results_dir = '/home/aaldahdo/detectors/results/kd_bu/'
 kd_bu_results_gray_dir = '/home/aaldahdo/detectors/results/kd_bu/gray/'
 #-------------------------- detect LID
-k_nn = [20, 30, 20, 30]
-lid_results_dir = '/home/aaldahdo/detectors/results/lid/'
-lid_results_gray_dir = '/home/aaldahdo/detectors/results/lid/gray/'
+k_nn = [20, 20, 30, 20, 30]
+lid_results_dir =  os.path.join(base_dir, 'results/lid/')
+lid_results_gray_dir = os.path.join(base_dir, 'results/lid/gray/')
 
 #-------------------------- detect MagNet
 magnet_results_dir = os.path.join(base_dir, 'results/magnet/')

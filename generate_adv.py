@@ -12,8 +12,9 @@ from keras import optimizers
 from keras.metrics import categorical_crossentropy
 from setup_paths import *
 import tensorflow as tf
+tf.compat.v1.experimental.output_all_intermediates(True)
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 # def batch(iterable_1, iterable_2, batch_size=10):

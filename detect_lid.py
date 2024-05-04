@@ -6,6 +6,8 @@ from setup_paths import *
 # os.environ["CUDA_VISIBLE_DEVICES"] = ""
 from sklearn.preprocessing import scale, MinMaxScaler, StandardScaler
 from lid.util import (random_split, block_split, train_lr, compute_roc, get_lids_random_batch, get_noisy_samples)
+from keras import optimizers
+from keras.metrics import categorical_crossentropy
 
 #method from the original paper gitub code available on /lid folder
 def get_lid(model, X_test, X_test_noisy, X_test_adv, k=10, batch_size=100, dataset='mnist'):
@@ -52,7 +54,7 @@ def main(args):
         model=model_class.model
         sgd = optimizers.SGD(lr=0.05, decay=1e-6, momentum=0.9, nesterov=True)
         model.compile(loss=categorical_crossentropy, optimizer=sgd, metrics=['accuracy'])
-        
+
     elif args.dataset == 'cifar':
         from baselineCNN.cnn.cnn_cifar10 import CIFAR10CNN as myModel
         model_class = myModel(mode='load', filename='cnn_{}.h5'.format(args.dataset))
@@ -170,6 +172,9 @@ def main(args):
                     'acc': acc_all, 'tpr': tpr_all, 'fpr': fpr_all, 'tp': tp_all, 'ap': ap_all, 'fb': fb_all, 'an': an_all,	\
                     'tprs': list(fprs_all), 'fprs': list(tprs_all),	'auc': roc_auc_all}
     results_all.append(curr_result)
+
+
+    accuracy, precision, recall, F1 = detection_evalulate_metric2(y_test[:][:,0], y_label_pred)
 
     #for Y_success
     if len(inds_success)==0:
@@ -470,6 +475,13 @@ def main(args):
                     writer.writerow(row)
                 
         print('Done!')
+
+def detection_evalulate_metric2(Y_detect_test, Y_detect_pred):
+    accuracy = accuracy_score(Y_detect_test, Y_detect_pred)
+    precision = precision_score(Y_detect_test, Y_detect_pred)
+    recall = recall_score(Y_detect_test, Y_detect_pred)
+    F1 = float(2 * precision * recall / (precision + recall))
+    return accuracy, precision, recall, F1
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

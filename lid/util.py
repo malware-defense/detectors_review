@@ -48,6 +48,21 @@ STDEVS = {
             'hca_0.03125': 0.03125, 'hca_0.0625': 0.0625, 'hca_0.125': 0.125, 'hca_0.25': 0.25, 'hca_0.3125': 0.3125, 'hca_0.5': 0.5,\
             'sa': 0.3, 'sta': 0.3, 'hop': 0.3
             },
+    'drebin': {'fgsm_0.03125': 0.125, 'fgsm_0.0625': 0.0625, 'fgsm_0.125': 0.125, 'fgsm_0.25': 0.25,
+              'fgsm_0.3125': 0.125, 'fgsm_0.5': 0.5, \
+              'bim_0.03125': 0.03125, 'bim_0.0625': 0.0625, 'bim_0.125': 0.125, 'bim_0.25': 0.25, 'bim_0.3125': 0.3125,
+              'bim_0.5': 0.5, \
+              'pgd1_5': 0.03125, 'pgd1_10': 0.0625, 'pgd1_15': 0.125, 'pgd1_20': 0.125, 'pgd1_25': 0.125,
+              'pgd1_30': 0.25, 'pgd1_40': 0.3125, \
+              'pgd2_0.25': 0.03125, 'pgd2_0.3125': 0.0625, 'pgd2_0.5': 0.125, 'pgd2_1': 0.125, 'pgd2_1.5': 0.25,
+              'pgd2_2': 0.3125, \
+              'pgdi_0.03125': 0.03125, 'pgdi_0.0625': 0.0625, 'pgdi_0.125': 0.125, 'pgdi_0.25': 0.25,
+              'pgdi_0.3125': 0.3125, 'pgdi_0.5': 0.5, \
+              'cwi': 0.25, 'df': 0.25, \
+              'hca_0.03125': 0.03125, 'hca_0.0625': 0.0625, 'hca_0.125': 0.125, 'hca_0.25': 0.25, 'hca_0.3125': 0.3125,
+              'hca_0.5': 0.5, \
+              'sa': 0.3, 'sta': 0.3, 'hop': 0.3
+              },
     'cifar': {'fgsm_0.03125': 0.03125, 'fgsm_0.0625': 0.0625, 'fgsm_0.125': 0.125, 'fgsm_0.25': 0.25, 'fgsm_0.3125': 0.3125, 'fgsm_0.5': 0.5,\
             'bim_0.03125': 0.03125, 'bim_0.0625': 0.0625, 'bim_0.125': 0.125, 'bim_0.25': 0.25, 'bim_0.3125': 0.3125, 'bim_0.5': 0.5,\
             'pgd1_5': 0.03125, 'pgd1_10': 0.0625, 'pgd1_15': 0.125, 'pgd1_20': 0.125, 'pgd1_25': 0.125, 'pgd1_30': 0.25, 'pgd1_40': 0.3125,\
@@ -475,9 +490,13 @@ def get_layer_wise_activations(model, dataset):
     :param dataset: 'mnist', 'cifar', 'svhn', has different submanifolds architectures  
     :return: 
     """
-    assert dataset in ['mnist', 'cifar', 'svhn', 'tiny'], \
+    assert dataset in ['mnist', 'drebin', 'cifar', 'svhn', 'tiny'], \
         "dataset parameter must be either 'mnist' 'cifar' or 'svhn'"
     if dataset == 'mnist':
+        # mnist model
+        acts = [model.layers[0].input]
+        acts.extend([layer.output for layer in model.layers])
+    elif dataset == 'drebin':
         # mnist model
         acts = [model.layers[0].input]
         acts.extend([layer.output for layer in model.layers])
