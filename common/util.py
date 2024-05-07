@@ -35,7 +35,14 @@ from setup_paths import *
 import time
 import pickle
 from sklearn.metrics import *
+from termcolor import colored
 
+red = lambda x: colored(x, 'red')
+green = lambda x: colored(x, 'green')
+yellow = lambda x: colored(x, 'yellow')
+blue = lambda x: colored(x, 'blue')
+magenta = lambda x: colored(x, 'magenta')
+cyan = lambda x: colored(x, 'cyan')
 
 def normalize_mean(X_train, X_test):
     mean = np.mean(X_train, axis=(0, 1, 2, 3))
@@ -74,6 +81,19 @@ def load_drebin_data():
     y_train = np.load(os.path.join(base_dir, 'datasets/drebin/train/mama_family_ori_train_label.npy'))
     x_test = np.load(os.path.join(base_dir, 'datasets/drebin/test/mama_family_testori_data.npy'))
     y_test = np.load(os.path.join(base_dir, 'datasets/drebin/test/mama_family_testori_label.npy'))
+
+    x_train = np.reshape(x_train, (-1, 11, 11, 1))
+    x_test = np.reshape(x_test, (-1, 11, 11, 1))
+
+    return (x_train, y_train), (x_test, y_test)
+
+def load_md_data(detection = 'mamadroid', classifier = 'rf'):
+    data_dir = '/root/autodl-fs/sample'
+    x_train = np.load(os.path.join(data_dir, 'train_sample', detection, detection + '_' + classifier + '_train.npy'))
+    y_train = np.load(os.path.join(data_dir, 'train_sample', detection, detection + '_' + classifier + '_train_label.npy'))
+    x_test = np.load(os.path.join(data_dir, 'test_sample', detection, detection + '_' + classifier + '_test.npy'))
+    y_test = np.load(
+        os.path.join(data_dir, 'test_sample', detection, detection + '_' + classifier + '_test_label.npy'))
 
     x_train = np.reshape(x_train, (-1, 11, 11, 1))
     x_test = np.reshape(x_test, (-1, 11, 11, 1))
@@ -142,6 +162,10 @@ def toCat_onehot(y_train, y_test, numclasses):
     y_test = to_categorical(y_test, numclasses)
 
     return y_train, y_test
+
+def to_onehot_encode(y_data, numclasses):
+    y_data = to_categorical(y_data, numclasses)
+    return y_data
 
 def get_tpr_fpr(true_labels, pred_labels):
     TP = np.sum(np.logical_and(pred_labels == 1, true_labels == 1))
