@@ -53,6 +53,9 @@ def main():
     x_train, y_train, x_test, y_test, x_adv, y_adv = \
         dataset.x_train, dataset.y_train, dataset.x_test, dataset.y_test, dataset.x_adv, dataset.y_adv
 
+    if args.detection == "drebin" or args.detection == "apigraph":
+        x_test = x_test.toarray()
+        x_adv = x_adv.toarray()
 
     if args.Random_sample:
         random.seed(42)

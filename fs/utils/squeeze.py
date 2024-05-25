@@ -84,7 +84,7 @@ def median_filter_py(x, width, height=-1):
     """
     if height == -1:
         height = width
-    return ndimage.filters.median_filter(x, size=(1,width,height,1), mode='reflect')
+    return ndimage.filters.median_filter(x, size=(1,width), mode='reflect')   # TODO：size=(1,width,height,1)
 
 def median_random_filter_py(x, width, height=-1):
     # assert False

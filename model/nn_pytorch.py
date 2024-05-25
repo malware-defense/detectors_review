@@ -20,7 +20,7 @@ class NnTorch:
         self.num_classes = 2
 
         # ====================== Model =============================
-        self.input_shape = dataset.x_train.shape[1:]
+        self.input_shape = dataset.x_train.shape[1]
         self.model = self.build_model()
 
         if mode == 'train':
@@ -33,8 +33,8 @@ class NnTorch:
     def build_model(self):
         # ================= The final model ============================
         model = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(11 * 11, 128), nn.ReLU(),
+            # nn.Flatten(),
+            nn.Linear(self.input_shape, 128), nn.ReLU(),
             nn.Linear(128, 100), nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(100, self.num_classes))

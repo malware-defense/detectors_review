@@ -10,7 +10,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras import regularizers
 
 class DREBINNN:
-    def __init__(self, mode='train', filename="nn_drebin.h5", normalize_mean=False, epochs=50, batch_size=128):
+    def __init__(self, mode='train', filename="nn_drebin.h5", normalize_mean=False, epochs=1, batch_size=128):
         self.mode = mode #train or load
         self.filename = filename
         self.normalize_mean = normalize_mean
@@ -37,7 +37,7 @@ class DREBINNN:
         if mode=='train':
             self.model = self.train(self.model)
         elif mode=='load':
-            self.model.load_weights("{}{}".format(checkpoints_dir, self.filename))
+            self.model.load_weights("{}{}".format(checkpoints_dir, self.filename), by_name = True)
         else:
             raise Exception("Sorry, select the right mode option (train/load)")
 

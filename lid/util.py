@@ -421,7 +421,7 @@ def get_noisy_samples(X_test, X_test_adv, dataset, attack):
 
     X_test_noisy = np.minimum(
             np.maximum(
-                X_test + np.random.normal(loc=0, scale=STDEVS[dataset][attack],
+                X_test + np.random.normal(loc=0, scale=STDEVS['drebin'][attack],
                                           size=X_test.shape),
                 0
             ),
@@ -880,7 +880,7 @@ def block_split(X, Y):
     X_adv, Y_adv = X[:partition], Y[:partition]
     X_norm, Y_norm = X[partition: 2*partition], Y[partition: 2*partition]
     X_noisy, Y_noisy = X[2*partition:], Y[2*partition:]
-    num_train = int(partition*0.007) * 100
+    num_train = int(partition*0.8)
 
     X_train = np.concatenate((X_norm[:num_train], X_noisy[:num_train], X_adv[:num_train]))
     Y_train = np.concatenate((Y_norm[:num_train], Y_noisy[:num_train], Y_adv[:num_train]))

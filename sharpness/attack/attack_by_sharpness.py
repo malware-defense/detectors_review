@@ -60,7 +60,7 @@ def perturb_as_denfense(model, model_inputs, init_pred_labels, step, adv_lr, adv
 
     #initialize delta
     delta = torch.zeros_like(model_inputs).uniform_(-1, 1)
-    dim = torch.from_numpy(np.array([121]))
+    dim = torch.from_numpy(np.array(model_inputs.shape[1]))
     magnitude = adv_init_mag / torch.sqrt(dim)
     delta = (delta * magnitude.view(-1, 1))
 
@@ -75,7 +75,7 @@ def perturb_as_denfense(model, model_inputs, init_pred_labels, step, adv_lr, adv
         del loss
 
         delta_grad = delta.grad.clone().detach()
-        denorm = torch.norm(delta_grad.view(delta_grad.size(0), -1), dim=1).view(-1, 1, 1, 1)
+        denorm = torch.norm(delta_grad.view(delta_grad.size(0), -1), dim=1).view(-1, 1)
         denorm = torch.clamp(denorm, min=1e-8)
         delta = (delta + adv_lr * delta_grad / denorm).detach()
 

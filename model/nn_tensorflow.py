@@ -39,8 +39,8 @@ class NnTensorflow:
         input = Input(shape=self.input_shape, name='l_0')
 
         #================= Dense ============================
-        task0 = Flatten(name='l_1')(input)
-        task0 = Dense(128, kernel_regularizer=regularizers.l2(weight_decay), name='l_2')(task0)
+        # task0 = Flatten(name='l_1')(input)
+        task0 = Dense(128, kernel_regularizer=regularizers.l2(weight_decay), name='l_2')(input)
         task0 = Activation('relu', name='l_3')(task0)
         task0 = Dense(100, kernel_regularizer=regularizers.l2(weight_decay), name='l_4')(task0)
         task0 = Activation('relu', name='l_5')(task0)
@@ -62,7 +62,7 @@ class NnTensorflow:
         sgd = optimizers.SGD(lr=learning_rate, momentum=0.9, nesterov=True)
         model.compile(loss=categorical_crossentropy, optimizer=sgd, metrics=['accuracy'])
 
-        historytemp = model.fit(dataset.x_train, y=dataset.base_clf_predict_y_train, batch_size=self.batch_size, epochs=self.epochs)
+        historytemp = model.fit(dataset.x_train, y=dataset.y_train, batch_size=self.batch_size, epochs=self.epochs)
         
         #================= Save model and history =========================
         with open("{}{}_history.pkl".format(checkpoints_dir, self.filename[:-3]), 'wb') as handle:

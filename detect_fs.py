@@ -82,7 +82,7 @@ def main(args):
 
     if args.dataset == 'drebin':
         from baselineCNN.nn.nn_drebin import DREBINNN as myModel
-        model_class = myModel(mode='load', filename='nn_{}.h5'.format(args.dataset))
+        model_class = myModel(mode='train', filename='nn_{}.h5'.format(args.dataset))
         model=model_class.model
         sgd = optimizers.SGD(lr=0.05, decay=1e-6, momentum=0.9, nesterov=True)
         model.compile(loss=categorical_crossentropy, optimizer=sgd, metrics=['accuracy'])

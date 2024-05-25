@@ -178,9 +178,9 @@ class Operator:
         Y_true = untrusted_obj.labels
         
         X_prime = self.reformer.heal(X)
-        Y = np.argmax(self.classifier.classify(X), axis=1)
+        Y = np.argmax(self.classifier.classify(X.reshape(X.shape[0], X.shape[1] * X.shape[2])), axis=1)
         Y_judgement = (Y == Y_true[:len(X_prime)])
-        Y_prime = np.argmax(self.classifier.classify(X_prime), axis=1)
+        Y_prime = np.argmax(self.classifier.classify(X_prime.reshape(X_prime.shape[0], X_prime.shape[1] * X_prime.shape[2])), axis=1)
         Y_prime_judgement = (Y_prime == Y_true[:len(X_prime)])
 
         return np.array(list(zip(Y_judgement, Y_prime_judgement)))

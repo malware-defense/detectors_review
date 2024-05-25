@@ -25,14 +25,14 @@ from datasets.apks import ApkData
 # FLAGS = flags.FLAGS
 # flags.DEFINE_boolean('detection_train_test_mode', True, 'Split into train/test datasets.')
 
-def get_distance(model, dataset, X1):
+def get_distance(model, X1):
     X1_pred = model.predict(X1)
     vals_squeezed = []
 
     X1_seqeezed_bit = bit_depth_py(X1, 1)
     vals_squeezed.append(model.predict(X1_seqeezed_bit))
-    X1_seqeezed_filter_median = median_filter_py(X1, 2)
-    vals_squeezed.append(model.predict(X1_seqeezed_filter_median))
+    # X1_seqeezed_filter_median = median_filter_py(X1, 2)
+    # vals_squeezed.append(model.predict(X1_seqeezed_filter_median))
     # X1_seqeezed_filter_local = non_local_means_color_py(X1, 6, 3, 2)
     # vals_squeezed.append(model.predict(X1_seqeezed_filter_local))
 
@@ -53,7 +53,7 @@ def train_fs(model, dataset, X1, train_fpr):
     return threshold
 
 def model_test(model, dataset, X, threshold):
-    distances = get_distance(model, dataset, X)
+    distances = get_distance(model, X)
     Y_pred = distances > threshold
     return Y_pred, distances
 
@@ -81,6 +81,10 @@ def main():
     accuracy_all = calculate_accuracy(y_pred, y_test)
     print('Test accuracy on raw legitimate examples %.4f' % (accuracy_all))
 
+    if args.detection == "drebin" or args.detection == "apigraph":
+        x_test = x_test.toarray()
+        x_adv = x_adv.toarray()
+
     if args.Random_sample:
         random.seed(42)
         sample_num = len(x_adv)
@@ -96,7 +100,7 @@ def main():
 
 
 
-    Y_all_pred_score = get_distance(model, args.dataset, X_all)
+    Y_all_pred_score = get_distance(model, X_all)
     fprs_all, tprs_all, thresholds_all = roc_curve(Y_all, Y_all_pred_score)
     roc_auc_all = auc(fprs_all, tprs_all)
     maxindex = (tprs_all - fprs_all).tolist().index(max(tprs_all - fprs_all))

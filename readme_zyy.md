@@ -50,7 +50,12 @@
 
 四、实现FS、MagNet、LID方法的检测结果    [18点前必须完成]
 1. 实现detection_fs.py, dataset可复用; model需要重新实现，命名为model/nn_tensorflow.py
-2. 
+2. 5.8 下午实现 sharpness、fs的所有结果
+ssh -p 46285 root@region-42.seetacloud.com 
+
+3. 5.8 晚上实现 LID、MagNet的所有结果
+
+
 
 5.6 开始复现 BagAmmo
 一、找到生成对抗样本的npy文件
@@ -69,3 +74,14 @@
    - 数据原因：对抗样本与测试样本比例严重不均衡   [针对对抗样本重新准备 x_adv_orig]
      - 取等量数据集，发现结果要好很多
    - 攻击方法原因：sharpness无法解决AdvDroidZero方法生成的对抗样本
+4. AdvDroidZero攻击下，sharpness检测结果最好结果竟然是没有扰动，也就意味着 sharpness提出的扰动其实并没有用，不如直接用sharpness判定
+   - 这种现象其实不太正常，因为既然能躲避原有target模型的检测，那就意味着对抗样本的loss函数值本身就比正常样本的loss函数值低
+   - HIV检测结果没有这种现象
+   - 训练替代模型不充分的原因、训练替代模型的结构定义有错
+     - 模型的检测成功率是不是应该以Target model的预测结果作为label
+   - 只要有参数(thread)随着攻击先增加后降低的效果即可; 只要效果比其他方法好即可; 只要多种评估指标比消融的模块效果即可;  所谓的结果的绝对值不是很重要
+5. 
+
+
+
+
